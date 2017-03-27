@@ -61,10 +61,10 @@ public class EFMScaledData {
     private final double[] target;
 
     // minimum target value
-    private Double target_min;
+    public Double target_min;
     
     // maximum target value
-    private Double target_max;
+    public Double target_max;
        
     // Maximum correlation allowed between new features and their parents
     private double CORR_THRESHOLD = 0.95;

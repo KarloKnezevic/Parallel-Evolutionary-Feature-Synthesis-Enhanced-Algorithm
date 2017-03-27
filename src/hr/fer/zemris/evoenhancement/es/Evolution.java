@@ -5,7 +5,7 @@ import java.util.List;
 public class Evolution {
 
 	public static void mutate(List<Individual> population) {
-
+		//do nothing
 	}
 
 	public static void crossover(List<Individual> population) {
