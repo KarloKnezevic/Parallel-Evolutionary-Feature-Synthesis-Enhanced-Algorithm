@@ -535,7 +535,7 @@ public class RegressionEFM {
 	/*
 	 * composition of new features via binary functions
 	 */
-	private void binaryRecombination(int indexNewFeature, int indexParent1, int indexParent2) {
+	public void binaryRecombination(int indexNewFeature, int indexParent1, int indexParent2) {
 		int indexOp = r.nextInt(binaryOps.length);
 		switch (binaryOps[indexOp]) {
 		case "*":
@@ -558,7 +558,7 @@ public class RegressionEFM {
 	/*
 	 * composition of new features via unary functions
 	 */
-	private void unaryRecombination(int indexNewFeature, int indexParent1) {
+	public void unaryRecombination(int indexNewFeature, int indexParent1) {
 		int indexOp = r.nextInt(unaryOps.length);
 		switch (unaryOps[indexOp]) {
 		case "mylog":

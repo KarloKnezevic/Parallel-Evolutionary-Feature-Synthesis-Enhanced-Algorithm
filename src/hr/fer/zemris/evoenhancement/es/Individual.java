@@ -1,29 +1,46 @@
 package hr.fer.zemris.evoenhancement.es;
 
 import evofmj.algorithm.RegressionEFM;
+import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
 
 public class Individual {
 	
 	private RegressionEFM regressionEFM;
 	
-	private double accuracy;
+	private Evaluation evaluation;
 	
-	public Individual(RegressionEFM regressionEFM, double accuracy) {
+	private Classifier classifier;
+	
+	public Individual(RegressionEFM regressionEFM, Evaluation evaluation, Classifier classifier) {
 		this.regressionEFM = regressionEFM;
-		this.accuracy = accuracy;
+		this.evaluation = evaluation;
+		this.classifier = classifier;
 	}
 
 	public RegressionEFM getRegressionEFM() {
 		return regressionEFM;
 	}
-
-	public double getAccuracy() {
-		return accuracy;
+	
+	public Evaluation getEvaluation() {
+		return evaluation;
 	}
 	
+	public double getFitness() {
+		return evaluation.pctCorrect();
+	}
+
+	public Classifier getClassifier() {
+		return classifier;
+	}
+
+	public void setEvaluation(Evaluation evaluation) {
+		this.evaluation = evaluation;
+	}
+
 	@Override
 	public String toString() {
-		return Double.toString(accuracy);
+		return Double.toString(this.getFitness());
 	}
 	
 	

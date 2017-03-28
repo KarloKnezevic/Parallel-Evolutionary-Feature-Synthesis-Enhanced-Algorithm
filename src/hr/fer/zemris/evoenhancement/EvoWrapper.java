@@ -77,7 +77,7 @@ public class EvoWrapper {
 
 				@Override
 				public int compare(Individual first, Individual second) {
-					return (int) Math.signum(second.getAccuracy() - first.getAccuracy());
+					return (int) Math.signum(second.getFitness() - first.getFitness());
 				}
 
 			});
@@ -93,6 +93,13 @@ public class EvoWrapper {
 
 			Evolution.crossover(population);
 			Evolution.mutate(population);
+			
+			Evolution.parallelEvaluation(population, pool);
+			
+			//print population fitness
+			for (Individual individual : population) {
+				Main.print("Individual fitness: " + individual.getFitness());
+			}
 		}
 
 		// shutdown

@@ -2,10 +2,10 @@ package hr.fer.zemris.evoenhancement;
 
 public class Main {
 
-	private static int GENERATIONS = 2;
+	private static int GENERATIONS = 20;
 	private static int POPULATION_SIZE = 5;
 	private static String DATA_PATH = "data/1data.arff";
-	private static double THREAD_EXEC_TIME = 0.2;
+	private static double THREAD_EXEC_TIME = 0.5;
 
 	public static void main(String[] args) {
 
