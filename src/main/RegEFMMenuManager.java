@@ -132,26 +132,26 @@ public class RegEFMMenuManager {
      * @throws ClassNotFoundException
      * @throws Exception
      */
-    public static void main(String args[]) throws IOException, ClassNotFoundException, Exception{
-        RegEFMMenuManager m = new RegEFMMenuManager();
-        if (args.length == 0) {
-            System.err.println("Error: too few arguments");
-            m.printUsage();
-            System.exit(-1);
-        }else{
-            switch (args[0]) {
-                case "-train":
-                    m.parseRegEFMTrain(args);
-                    break;
-                case "-test":
-                    m.parseRegEFMTest(args);
-                    break;
-                default:
-                    System.err.println("Error: unknown argument");
-                    m.printUsage();
-                    System.exit(-1);
-                    break;
-            }
-        }
-    }
+//    public static void main(String args[]) throws IOException, ClassNotFoundException, Exception{
+//        RegEFMMenuManager m = new RegEFMMenuManager();
+//        if (args.length == 0) {
+//            System.err.println("Error: too few arguments");
+//            m.printUsage();
+//            System.exit(-1);
+//        }else{
+//            switch (args[0]) {
+//                case "-train":
+//                    m.parseRegEFMTrain(args);
+//                    break;
+//                case "-test":
+//                    m.parseRegEFMTest(args);
+//                    break;
+//                default:
+//                    System.err.println("Error: unknown argument");
+//                    m.printUsage();
+//                    System.exit(-1);
+//                    break;
+//            }
+//        }
+//    }
 }

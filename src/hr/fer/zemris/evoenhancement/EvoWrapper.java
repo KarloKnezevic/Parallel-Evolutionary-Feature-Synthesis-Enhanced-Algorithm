@@ -12,10 +12,14 @@ import java.util.concurrent.Future;
 import hr.fer.zemris.evoenhancement.es.Evolution;
 import hr.fer.zemris.evoenhancement.es.Individual;
 import hr.fer.zemris.evoenhancement.parallel.ParallelJob;
+import hr.fer.zemris.evoenhancement.util.Logger;
+import hr.fer.zemris.evoenhancement.util.Statistics;
 
 public class EvoWrapper {
 
 	private int generations;
+
+	private int runs;
 
 	private int populationSize;
 
@@ -25,8 +29,9 @@ public class EvoWrapper {
 
 	private double threadExecTime;
 
-	public EvoWrapper(int generations, int populationSize, String dataPath, double threadExecTime) {
+	public EvoWrapper(int runs, int generations, int populationSize, String dataPath, double threadExecTime) {
 		this.generations = generations;
+		this.runs = runs;
 		this.threadNumber = Runtime.getRuntime().availableProcessors();
 		this.populationSize = populationSize;
 		this.dataPath = dataPath;
@@ -35,84 +40,99 @@ public class EvoWrapper {
 
 	public void start() {
 
-		Main.print("Wrapper execution started");
+		Logger.print("Wrapper execution started");
 
 		// create executor pool
 		ExecutorService pool = Executors.newFixedThreadPool(threadNumber);
 
-		// population
-		List<Individual> population = new ArrayList<>();
+		for (int run = 0; run < runs; run++) {
+			Logger.print(run + ". run");
+			Logger.log("RUN " + run, 0);
 
-		// outer loop
-		for (int generation = 0; generation < generations; generation++) {
-			Main.print(generation + ". generation");
+			// population
+			List<Individual> population = new ArrayList<>();
 
-			/**
-			 * PARALLEL PART
-			 */
+			// stat
+			List<Double> bestFitness = new ArrayList<>();
 
-			Main.print("Feature synthesis and classification starting");
+			// outer loop
+			for (int generation = 0; generation < generations; generation++) {
+				Logger.print(generation + ". generation");
 
-			// create array of individuals
-			List<Future<Individual>> barrier = new ArrayList<>();
+				/**
+				 * PARALLEL PART
+				 */
 
-			for (int job = 0; job < populationSize; job++) {
-				ParallelJob parallelJob = new ParallelJob(job, dataPath, threadExecTime);
-				barrier.add(pool.submit(parallelJob));
-			}
+				Logger.print("Feature synthesis and classification starting");
 
-			for (Future<Individual> individual : barrier) {
-				try {
-					population.add(individual.get());
-				} catch (InterruptedException | ExecutionException e) {
-				}
-			}
+				// create array of individuals
+				List<Future<Individual>> barrier = new ArrayList<>();
 
-			/**
-			 * SERIAL PART
-			 */
-
-			Main.print("Building extended population");
-			population.sort(new Comparator<Individual>() {
-
-				@Override
-				public int compare(Individual first, Individual second) {
-					return (int) Math.signum(second.getFitness() - first.getFitness());
+				for (int job = 0; job < populationSize; job++) {
+					ParallelJob parallelJob = new ParallelJob(job, dataPath, threadExecTime);
+					barrier.add(pool.submit(parallelJob));
 				}
 
-			});
+				for (Future<Individual> individual : barrier) {
+					try {
+						population.add(individual.get());
+					} catch (InterruptedException | ExecutionException e) {
+					}
+				}
 
-			Main.print("Killing bad solutions");
+				/**
+				 * SERIAL PART
+				 */
 
-			int diff = population.size() - populationSize;
-			for (int index = population.size() - 1; diff > 0; index--, diff--) {
-				population.remove(index);
+				Logger.print("Building extended population");
+				population.sort(new Comparator<Individual>() {
+
+					@Override
+					public int compare(Individual first, Individual second) {
+						return (int) Math.signum(second.getFitness() - first.getFitness());
+					}
+
+				});
+
+				Logger.print("Killing bad solutions");
+
+				int diff = population.size() - populationSize;
+				for (int index = population.size() - 1; diff > 0; index--, diff--) {
+					population.remove(index);
+				}
+
+				Logger.print("Performing evolutionary operators");
+
+				Evolution.crossover(population);
+				Evolution.mutate(population);
+
+				Evolution.parallelEvaluation(population, pool);
+
+				// print population fitness
+				for (Individual individual : population) {
+					Logger.print("Individual fitness: " + individual.getFitness());
+				}
+
+				Logger.log(generation + "] " + population.get(0).toString());
+
+				bestFitness.add(population.get(0).getFitness());
 			}
 
-			Main.print("Performing evolutionary operators");
+			Statistics.makeRunStatistics(bestFitness);
 
-			Evolution.crossover(population);
-			Evolution.mutate(population);
-			
-			Evolution.parallelEvaluation(population, pool);
-			
-			//print population fitness
-			for (Individual individual : population) {
-				Main.print("Individual fitness: " + individual.getFitness());
+			try {
+				population.get(0).getRegressionEFM().saveBestFeatureSet(true);
+				population.get(0).getRegressionEFM().saveBestModel(true);
+			} catch (IOException e) {
 			}
 		}
+
+		Statistics.makeAllStatistics();
 
 		// shutdown
 		pool.shutdown();
 
-		// save best solution
-		Individual bestIndividual = population.get(0);
-		try {
-			bestIndividual.getRegressionEFM().saveBestFeatureSet(true);
-			bestIndividual.getRegressionEFM().saveBestModel(true);
-		} catch (IOException e) {
-		}
+		Logger.closeLogger();
 
 	}
-
 }

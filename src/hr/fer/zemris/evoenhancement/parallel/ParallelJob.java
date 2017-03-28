@@ -5,7 +5,6 @@ import java.util.concurrent.Callable;
 
 import evofmj.algorithm.RegressionEFM;
 import evofmj.evaluation.java.EFMScaledData;
-import hr.fer.zemris.evoenhancement.Main;
 import hr.fer.zemris.evoenhancement.es.Individual;
 import hr.fer.zemris.evoenhancement.util.DataMiner;
 import hr.fer.zemris.evoenhancement.util.DataProducer;
@@ -51,8 +50,6 @@ public class ParallelJob implements Callable<Individual> {
 			 * CLASSIFIER BUILDING
 			 */
 
-			Main.print("Building classifier");
-
 			DataMiner dataMiner = new DataMiner();
 
 			Classifier classifier = dataMiner.createClassifier(data);
@@ -60,8 +57,6 @@ public class ParallelJob implements Callable<Individual> {
 			/**
 			 * CLASSIFICATION
 			 */
-
-			Main.print("Testing");
 
 			Evaluation evaluation = dataMiner.makeEvaluation(classifier, data);
 

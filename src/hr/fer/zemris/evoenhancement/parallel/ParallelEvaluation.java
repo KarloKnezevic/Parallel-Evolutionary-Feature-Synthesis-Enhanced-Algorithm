@@ -2,7 +2,6 @@ package hr.fer.zemris.evoenhancement.parallel;
 
 import java.util.concurrent.Callable;
 
-import hr.fer.zemris.evoenhancement.Main;
 import hr.fer.zemris.evoenhancement.es.Individual;
 import hr.fer.zemris.evoenhancement.util.DataMiner;
 import hr.fer.zemris.evoenhancement.util.DataProducer;
@@ -22,8 +21,6 @@ public class ParallelEvaluation implements Callable<Void> {
 	public Void call() throws Exception {
 
 		try {
-
-			Main.print("Individual evaluation");
 
 			Instances data = new DataProducer(individual.getRegressionEFM()).produceData();
 
