@@ -10,8 +10,8 @@ import evofmj.evaluation.java.EFMScaledData;
 import hr.fer.zemris.evoenhancement.es.Individual;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.evaluation.output.prediction.PlainText;
+import weka.classifiers.trees.J48;
 import weka.core.AbstractInstance;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -38,72 +38,87 @@ public class ParallelJob implements Callable<Individual> {
 	public Individual call() throws Exception {
 
 		try {
+			
+			/**
+			 * FEATURE SELECTION AND MODEL BUILDING
+			 */
 
 			// construct features
 			this.parseRegEFMTrain();
 
-			// take transformed data according to features selection
-			
-			//numeric values for attributes
+			/**
+			 * DATA TRANSFORMATION AND LOADING
+			 */
+
+			// numeric values for attributes
 			ArrayList<Attribute> attributes = new ArrayList<>();
 			for (int attribute = 0; attribute < rEFM.maxFinalFeatures; attribute++) {
 				attributes.add(new Attribute("attribute" + attribute));
 			}
-			
-			//nominal values for classes
+
+			// nominal values for classes
 			ArrayList<String> classes = new ArrayList<>();
 			double minClass = rEFM.dataMatrix.target_min;
 			double maxClass = rEFM.dataMatrix.target_max;
-			for (double clazz = (int)minClass; clazz < maxClass; clazz++) {
+			for (double clazz = (int) minClass; clazz <= maxClass; clazz++) {
 				classes.add(Double.toString(clazz));
 			}
 			attributes.add(new Attribute("class", classes));
-			
-			
-			//declare feature vector
+
+			// set classes and class index
 			Instances data = new Instances("data", attributes, 0);
 			data.setClassIndex(data.numAttributes() - 1);
-			
 
-			//fill the data
+			// fill the data
 			double[] classified = rEFM.dataMatrix.getTargetValues();
 			for (int index = 0; index < rEFM.dataMatrix.getNumberOfFitnessCases(); index++) {
 				AbstractInstance instance = new DenseInstance(data.numAttributes());
 				instance.setDataset(data);
-				
+
+				double[] trace = rEFM.dataMatrix.getRow(index);
 				int att = 0;
-				for (; att < data.numAttributes()-1; att++) {
-					instance.setValue(att, rEFM.dataMatrix.getRow(index)[att]);
+				for (Integer idx : rEFM.dataIndexes) {
+					instance.setValue(att, trace[idx]);
+					att++;
 				}
-				instance.setValue(att, Double.toString(classified[att]));
+
+				instance.setValue(att, Double.toString(classified[index]));
 				data.add(instance);
 			}
 			
-			Instances train = data.trainCV(10, jobIndex);
-			Instances tst = data.testCV(10, jobIndex);
+			/**
+			 * CLASSIFIER BUILDING
+			 */
 
-
-			Classifier classifier = new NaiveBayes();
-			classifier.buildClassifier(train);
+			Classifier classifier = new J48();
+			// training data
+			classifier.buildClassifier(data);
 			
-			Evaluation test = new Evaluation(tst);
+			/**
+			 * CLASSIFICATION
+			 */
+
+			// training data
+			Evaluation test = new Evaluation(data);
 			StringBuffer buffer = new StringBuffer();
 			PlainText plainText = new PlainText();
 			plainText.setBuffer(buffer);
-			test.crossValidateModel(classifier, tst, 10, new Random(1), plainText);
+			test.crossValidateModel(classifier, data, 10, new Random(1), plainText);
 			
-			System.out.println(test.toSummaryString());
+			double accuracy = test.pctCorrect();
 			
+			/**
+			 * RETUNRN
+			 */
+			
+			return new Individual(rEFM, accuracy);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		// classify transformed data
-		double accuracy = new Random().nextDouble();
-
 		// return parallel result
-		return new Individual(rEFM, accuracy);
+		return null;
 	}
 
 	/**
@@ -124,20 +139,20 @@ public class ParallelJob implements Callable<Individual> {
 		int numArchiveFeatures = 0;
 		int numNewFeatures = 0;
 		int maxFeatureSize = 5;
+		int numberOfFinalFeatures = numberOfOriginalFeatures;
 
 		if (numMinutes != 0) {
 			numberOfOriginalFeatures = data.getNumberOfOriginalFeatures();
 			numArchiveFeatures = 3 * numberOfOriginalFeatures;
 			numNewFeatures = numberOfOriginalFeatures;
 			maxFeatureSize = 5;
-			int numberOfFinalFeatures = numberOfOriginalFeatures + numArchiveFeatures;
+			numberOfFinalFeatures = numberOfOriginalFeatures + numArchiveFeatures;
 			// int numberOfFinalFeatures = numberOfOriginalFeatures ;
 			rEFM = new RegressionEFM(dataPath, numArchiveFeatures, numNewFeatures, maxFeatureSize,
 					numberOfFinalFeatures);
-		} else {
-			rEFM = new RegressionEFM(dataPath, numArchiveFeatures, numNewFeatures, maxFeatureSize,
-					numberOfOriginalFeatures);
 		}
+
+		rEFM = new RegressionEFM(dataPath, numArchiveFeatures, numNewFeatures, maxFeatureSize, numberOfFinalFeatures);
 
 		rEFM.runEFM(numMinutes * 60);
 	}

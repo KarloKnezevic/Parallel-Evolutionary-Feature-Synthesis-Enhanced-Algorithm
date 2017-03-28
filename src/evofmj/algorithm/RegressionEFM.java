@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -62,6 +63,7 @@ public class RegressionEFM {
 	int indexIteration;
 	int FITNESS_BIAS = 1; // 0:vc --- 1:r2 --- 2:mse
 	int MODEL_SELECTION_BIAS = 1;
+	public List<Integer> dataIndexes;
 
 	/**
 	 * constructor
@@ -122,8 +124,6 @@ public class RegressionEFM {
 			finished = stopCriteria();
 			indexIteration++;
 		}
-		
-		System.out.println(bestFeatures.size());
 	
 		saveBestFeatureSet(true);
 		saveBestModel(true);
@@ -447,6 +447,7 @@ public class RegressionEFM {
 		// check if it is the best model so far
 		CURRENT_MSE = sqError;
 		if (CURRENT_MSE < BEST_MSE) {
+			dataIndexes = new ArrayList<>();
 			BEST_MSE = CURRENT_MSE;
 			STALL_ITERATIONS = 0;
 			bestFeatures = null;
@@ -461,6 +462,7 @@ public class RegressionEFM {
 					double weightAux = lassoWeights[indexFeature];
 					bestFeatures.add(featureAux);
 					bestWeights.add(weightAux);
+					dataIndexes.add(j);
 					indexFeature++;
 				}
 			}
