@@ -82,7 +82,7 @@ public class Logger {
 		if (null == writer) {
 			try {
 				writer = new BufferedWriter(new OutputStreamWriter(
-						new BufferedOutputStream(new FileOutputStream("data/report.txt")), "UTF-8"));
+						new BufferedOutputStream(new FileOutputStream("report.txt")), "UTF-8"));
 			} catch (UnsupportedEncodingException | FileNotFoundException e) {
 				e.printStackTrace();
 				return;

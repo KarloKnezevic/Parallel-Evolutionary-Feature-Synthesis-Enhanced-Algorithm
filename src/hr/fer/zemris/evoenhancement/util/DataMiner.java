@@ -27,7 +27,7 @@ public class DataMiner {
 		StringBuffer buffer = new StringBuffer();
 		PlainText plainText = new PlainText();
 		plainText.setBuffer(buffer);
-		evaluation.crossValidateModel(classifier, data, 10, new Random(1), plainText);
+		evaluation.crossValidateModel(classifier, data, 4, new Random(1), plainText);
 
 		return evaluation;
 	}

@@ -1,6 +1,5 @@
 package hr.fer.zemris.evoenhancement;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -77,6 +76,7 @@ public class EvoWrapper {
 					try {
 						population.add(individual.get());
 					} catch (InterruptedException | ExecutionException e) {
+						e.printStackTrace();
 					}
 				}
 
@@ -119,12 +119,6 @@ public class EvoWrapper {
 			}
 
 			Statistics.makeRunStatistics(bestFitness);
-
-			try {
-				population.get(0).getRegressionEFM().saveBestFeatureSet(true);
-				population.get(0).getRegressionEFM().saveBestModel(true);
-			} catch (IOException e) {
-			}
 		}
 
 		Statistics.makeAllStatistics();
